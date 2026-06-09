@@ -1,42 +1,19 @@
-# sv
+# excelking (엑셀왕)
 
-Everything you need to build a Svelte project, powered by [`sv`](https://github.com/sveltejs/cli).
+사무직 엑셀·문서 도구 허브. 전부 브라우저 클라이언트 처리(비용 0).
 
-## Creating a project
+## 개발
+- `npm run dev` — 개발 서버
+- `npm test` — 단위 테스트
+- `npm run build` — 프로덕션 빌드
 
-If you're seeing this, you've probably already done this step. Congrats!
+## 배포 (Cloudflare Pages)
+1. 이 저장소를 GitHub에 푸시
+2. Cloudflare Pages에서 저장소 연결
+3. 빌드 명령: `npm run build` / 출력 디렉토리: `.svelte-kit/cloudflare`
+4. git push 시 자동 재배포 → `excelking.pages.dev`
 
-```sh
-# create a new project
-npx sv create my-app
-```
+추후 `excelking.com` 도메인 구매 후 Pages 커스텀 도메인 연결.
 
-To recreate this project with the same configuration:
-
-```sh
-# recreate this project
-npx sv@0.15.4 create --template minimal --types ts --no-install excelking-tmp2
-```
-
-## Developing
-
-Once you've created a project and installed dependencies with `npm install` (or `pnpm install` or `yarn`), start a development server:
-
-```sh
-npm run dev
-
-# or start the server and open the app in a new browser tab
-npm run dev -- --open
-```
-
-## Building
-
-To create a production version of your app:
-
-```sh
-npm run build
-```
-
-You can preview the production build with `npm run preview`.
-
-> To deploy your app, you may need to install an [adapter](https://svelte.dev/docs/kit/adapters) for your target environment.
+설계 문서: `docs/superpowers/specs/2026-06-09-excelking-design.md`
+구현 계획: `docs/superpowers/plans/2026-06-09-excelking-mvp.md`
