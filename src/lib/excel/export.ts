@@ -1,8 +1,8 @@
 import * as XLSX from 'xlsx';
 import type { CompareResult, Row } from './types';
 
-/** CompareResult를 xlsx 바이너리(Uint8Array)로 만든다. 시트: A에만/B에만/공통 */
-export function buildResultWorkbook(result: CompareResult, keyColumn: string): Uint8Array {
+/** CompareResult를 xlsx 바이너리(ArrayBuffer)로 만든다. 시트: A에만/B에만/공통 */
+export function buildResultWorkbook(result: CompareResult, keyColumn: string): ArrayBuffer {
   const wb = XLSX.utils.book_new();
 
   const changedKeys = new Set(result.changed.map((c) => c.key));
@@ -22,5 +22,5 @@ export function buildResultWorkbook(result: CompareResult, keyColumn: string): U
     XLSX.utils.book_append_sheet(wb, ws, name);
   }
 
-  return XLSX.write(wb, { type: 'array', bookType: 'xlsx' }) as Uint8Array;
+  return XLSX.write(wb, { type: 'array', bookType: 'xlsx' }) as ArrayBuffer;
 }
