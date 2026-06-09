@@ -2,6 +2,11 @@ import type { Row, CompareResult } from './types';
 
 const norm = (v: unknown): string => String(v ?? '').trim();
 
+/**
+ * 두 행 배열을 keyColumn 기준으로 비교한다.
+ * 키 값은 앞뒤 공백을 무시하며, 키가 중복되면 각 배열에서 마지막 행을 사용한다.
+ * keyColumn이 행에 없으면 그 행의 키는 빈 문자열('')로 처리된다.
+ */
 export function compareByKey(rowsA: Row[], rowsB: Row[], keyColumn: string): CompareResult {
   const mapA = new Map<string, Row>();
   const mapB = new Map<string, Row>();
