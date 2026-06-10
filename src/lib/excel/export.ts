@@ -1,7 +1,8 @@
 import * as XLSX from 'xlsx';
 import type { CompareResult, Row } from './types';
+import { zipSync } from 'fflate';
 import type { SplitGroup } from './split';
-import { sanitizeSheetName, uniqueNames } from './names';
+import { sanitizeSheetName, sanitizeFileName, uniqueNames } from './names';
 
 /** CompareResult를 xlsx 바이너리(ArrayBuffer)로 만든다. 시트: A에만/B에만/공통 */
 export function buildResultWorkbook(result: CompareResult, keyColumn: string): ArrayBuffer {
@@ -25,6 +26,21 @@ export function buildResultWorkbook(result: CompareResult, keyColumn: string): A
   }
 
   return XLSX.write(wb, { type: 'array', bookType: 'xlsx' }) as ArrayBuffer;
+}
+
+/** SplitGroup 배열을 그룹별 xlsx 파일로 만들어 ZIP(Uint8Array)으로 묶는다. */
+export function buildSplitZip(groups: SplitGroup[]): Uint8Array {
+  const names = uniqueNames(groups.map((g) => sanitizeFileName(g.value)), 80);
+  const files: Record<string, Uint8Array> = {};
+  groups.forEach((g, i) => {
+    const wb = XLSX.utils.book_new();
+    const ws = XLSX.utils.json_to_sheet(g.rows.length ? g.rows : [{}]);
+    XLSX.utils.book_append_sheet(wb, ws, 'Sheet1');
+    const buf = XLSX.write(wb, { type: 'array', bookType: 'xlsx' }) as ArrayBuffer;
+    files[`${names[i]}.xlsx`] = new Uint8Array(buf);
+  });
+  // xlsx는 이미 압축돼 있어 재압축 이득이 없다
+  return zipSync(files, { level: 0 });
 }
 
 /** SplitGroup 배열을 한 워크북(그룹=시트)으로 만든다. 시트명은 정리·중복 해소. */

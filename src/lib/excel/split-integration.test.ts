@@ -1,7 +1,8 @@
 import { describe, it, expect } from 'vitest';
 import * as XLSX from 'xlsx';
+import { unzipSync } from 'fflate';
 import { splitByColumn } from './split';
-import { buildSplitWorkbook } from './export';
+import { buildSplitWorkbook, buildSplitZip } from './export';
 import type { Row } from './types';
 
 const ROWS: Row[] = [
@@ -38,5 +39,22 @@ describe('split→buildSplitWorkbook 통합', () => {
     ];
     const wb = readBack(buildSplitWorkbook(splitByColumn(rows, '팀')));
     expect(Object.keys(wb)).toEqual(['영업 마케팅', '영업 마케팅 (2)']);
+  });
+});
+
+describe('split→buildSplitZip 통합', () => {
+  it('그룹별 xlsx 파일이 ZIP에 들어간다', () => {
+    const zip = unzipSync(buildSplitZip(splitByColumn(ROWS, '부서')));
+    expect(Object.keys(zip).sort()).toEqual(['영업.xlsx', '인사.xlsx']);
+  });
+
+  it('ZIP 안 xlsx를 다시 읽으면 그룹 행과 일치한다', () => {
+    const zip = unzipSync(buildSplitZip(splitByColumn(ROWS, '부서')));
+    const wb = XLSX.read(zip['영업.xlsx'], { type: 'array' });
+    const rows = XLSX.utils.sheet_to_json<Row>(wb.Sheets[wb.SheetNames[0]], {
+      raw: false,
+      defval: ''
+    });
+    expect(rows.map((r) => r.이름)).toEqual(['김철수', '박민수']);
   });
 });
