@@ -6,7 +6,12 @@
       desc: '두 파일을 키 열 기준으로 대조해 일치/불일치/변경을 찾아줍니다.',
       live: true
     },
-    { href: '#', title: '조건별 시트/파일 분리', desc: '준비 중', live: false },
+    {
+      href: '/excel-split',
+      title: '엑셀 조건별 시트/파일 분리',
+      desc: '열 값별로 행을 나눠 시트 또는 개별 파일(ZIP)로 내려받습니다.',
+      live: true
+    },
     { href: '#', title: 'PDF 표 → 엑셀 추출', desc: '준비 중', live: false },
     { href: '#', title: '엑셀 합치기', desc: '준비 중', live: false },
     { href: '#', title: '엑셀 자동 대시보드', desc: '준비 중', live: false }
