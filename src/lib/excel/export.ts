@@ -2,6 +2,7 @@ import * as XLSX from 'xlsx';
 import type { CompareResult, Row } from './types';
 import { zipSync } from 'fflate';
 import type { SplitGroup } from './split';
+import type { MergeResult } from './merge';
 import { sanitizeSheetName, sanitizeFileName, uniqueNames } from './names';
 
 /** CompareResult를 xlsx 바이너리(ArrayBuffer)로 만든다. 시트: A에만/B에만/공통 */
@@ -51,5 +52,15 @@ export function buildSplitWorkbook(groups: SplitGroup[]): ArrayBuffer {
     const ws = XLSX.utils.json_to_sheet(g.rows.length ? g.rows : [{}]);
     XLSX.utils.book_append_sheet(wb, ws, names[i]);
   });
+  return XLSX.write(wb, { type: 'array', bookType: 'xlsx' }) as ArrayBuffer;
+}
+
+/** MergeResult를 단일 시트('합치기') xlsx로 만든다. 열 순서는 result.columns로 강제. */
+export function buildMergeWorkbook(result: MergeResult): ArrayBuffer {
+  const wb = XLSX.utils.book_new();
+  const ws = XLSX.utils.json_to_sheet(result.rows.length ? result.rows : [{}], {
+    header: result.columns
+  });
+  XLSX.utils.book_append_sheet(wb, ws, '합치기');
   return XLSX.write(wb, { type: 'array', bookType: 'xlsx' }) as ArrayBuffer;
 }
