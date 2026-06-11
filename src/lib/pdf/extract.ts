@@ -1,49 +1,29 @@
 import type { Line, PageContent, TextItem } from './types';
 
-/** getOperatorList에서 가로/세로 직선을 best-effort로 추출한다. CTM 미적용(단순 표 가정). */
+/**
+ * getOperatorList에서 가로/세로 직선을 best-effort로 추출한다.
+ * pdfjs v5의 constructPath 인자는 [pathType, pathData, minMax]이며, 마지막 인자가
+ * 경로의 바운딩박스 [x0,y0,x1,y1]다. 한 변이 거의 0인(얇은) 박스를 직선으로 본다.
+ * CTM 미적용(단순 표 가정). 여러 선분이 한 path로 묶인 경우는 bbox로 근사(한계).
+ */
 async function extractLines(page: any, OPS: any): Promise<{ hLines: Line[]; vLines: Line[] }> {
   const opList = await page.getOperatorList();
   const hLines: Line[] = [];
   const vLines: Line[] = [];
   const eps = 2;
-  const add = (x1: number, y1: number, x2: number, y2: number) => {
-    if (Math.abs(y1 - y2) <= eps && Math.abs(x1 - x2) > eps) hLines.push({ x1, y1, x2, y2 });
-    else if (Math.abs(x1 - x2) <= eps && Math.abs(y1 - y2) > eps) vLines.push({ x1, y1, x2, y2 });
-  };
   for (let i = 0; i < opList.fnArray.length; i++) {
     if (opList.fnArray[i] !== OPS.constructPath) continue;
-    const [ops, coords] = opList.argsArray[i];
-    let cx = 0;
-    let cy = 0;
-    let k = 0;
-    let aborted = false;
-    for (const op of ops) {
-      if (op === OPS.moveTo) {
-        cx = coords[k++];
-        cy = coords[k++];
-      } else if (op === OPS.lineTo) {
-        const nx = coords[k++];
-        const ny = coords[k++];
-        add(cx, cy, nx, ny);
-        cx = nx;
-        cy = ny;
-      } else if (op === OPS.rectangle) {
-        const x = coords[k++];
-        const y = coords[k++];
-        const w = coords[k++];
-        const h = coords[k++];
-        add(x, y, x + w, y);
-        add(x, y + h, x + w, y + h);
-        add(x, y, x, y + h);
-        add(x + w, y, x + w, y + h);
-        cx = x;
-        cy = y;
-      } else {
-        aborted = true; // 알 수 없는 op(curveTo 등) → 좌표 소비 추정 불가, 이 path 중단
-        break;
-      }
-    }
-    void aborted;
+    const args = opList.argsArray[i];
+    const mm = args[args.length - 1];
+    if (!mm || mm.length < 4) continue;
+    const x0 = mm[0];
+    const y0 = mm[1];
+    const x1 = mm[2];
+    const y1 = mm[3];
+    const w = Math.abs(x1 - x0);
+    const h = Math.abs(y1 - y0);
+    if (h <= eps && w > eps) hLines.push({ x1: x0, y1: y0, x2: x1, y2: y0 });
+    else if (w <= eps && h > eps) vLines.push({ x1: x0, y1: y0, x2: x0, y2: y1 });
   }
   return { hLines, vLines };
 }
