@@ -2,12 +2,16 @@
   import { parseFile } from '$lib/excel/parse';
   import { mergeRows, type MergeInput, type MergeResult } from '$lib/excel/merge';
   import { buildMergeWorkbook } from '$lib/excel/export';
+  import Ribbon from '$lib/components/Ribbon.svelte';
+  import FormulaBar from '$lib/components/FormulaBar.svelte';
+  import { saveBlob, XLSX_MIME } from '$lib/excel/download';
 
   let inputs = $state<MergeInput[]>([]);
   let addSource = $state(true);
   let result = $state<MergeResult | null>(null);
   let busy = $state(false);
   let error = $state('');
+  let fileInput = $state<HTMLInputElement>();
 
   async function onUpload(e: Event) {
     error = '';
@@ -46,18 +50,7 @@
 
   function download() {
     if (!result) return;
-    const bytes = buildMergeWorkbook(result);
-    const blob = new Blob([bytes], {
-      type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-    });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = '합쳐진_엑셀.xlsx';
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-    URL.revokeObjectURL(url);
+    saveBlob(buildMergeWorkbook(result), '합쳐진_엑셀.xlsx', XLSX_MIME);
   }
 </script>
 
@@ -68,15 +61,20 @@
     content="여러 엑셀 파일을 한 시트로 합쳐 드립니다. 열 이름으로 자동 정렬, 출처 파일 표시. 무료, 설치 없이, 파일은 서버로 전송되지 않습니다." />
 </svelte:head>
 
-<h1>엑셀 합치기</h1>
-<p class="lead">여러 엑셀 파일을 올리면 열을 맞춰 한 시트로 합쳐 드립니다.</p>
+<Ribbon>
+  <button class="rbtn" onclick={() => fileInput?.click()}>📁 파일 추가</button>
+  <button class="rbtn primary" onclick={runMerge} disabled={!inputs.length}>▶ 합치기</button>
+  <button class="rbtn" onclick={download} disabled={!result}>⤓ 다운로드</button>
+</Ribbon>
+<input bind:this={fileInput} type="file" accept=".xlsx,.xls,.csv" multiple hidden onchange={onUpload} />
 
-<div class="uploads">
-  <label class="drop">
-    <span>엑셀 파일 여러 개 선택</span>
-    <input type="file" accept=".xlsx,.xls,.csv" multiple onchange={onUpload} />
-  </label>
-</div>
+<FormulaBar
+  cell="파일"
+  value={inputs.length
+    ? `${inputs.length}개 · ${inputs.reduce((n, f) => n + f.rows.length, 0)}행`
+    : '엑셀 파일을 추가하세요'} />
+
+<h1 class="ptitle">엑셀 합치기</h1>
 
 {#if busy}<p class="busy">파일을 읽는 중입니다…</p>{/if}
 {#if error}<p class="error">{error}</p>{/if}
@@ -89,10 +87,6 @@
   </ul>
 
   <label class="opt"><input type="checkbox" bind:checked={addSource} /> 출처 파일명 열 추가</label>
-
-  <div class="keyrow">
-    <button onclick={runMerge}>합치기</button>
-  </div>
 {/if}
 
 {#if result}
@@ -101,7 +95,6 @@
     <div class="stat"><strong>{result.rows.length}</strong><span>총 행</span></div>
     <div class="stat"><strong>{result.columns.length}</strong><span>열</span></div>
   </div>
-  <button class="primary" onclick={download}>합친 엑셀 다운로드</button>
 {/if}
 
 <p class="privacy">🔒 업로드한 파일은 서버로 전송되지 않고, 브라우저 안에서만 처리됩니다.</p>
@@ -138,15 +131,8 @@
 </section>
 
 <style>
-  h1 { font-size: 28px; margin: 0 0 8px; }
-  .lead { color: #555; margin: 0 0 24px; }
-  .uploads { display: grid; grid-template-columns: 1fr; gap: 12px; }
-  .drop {
-    display: flex; flex-direction: column; gap: 8px;
-    border: 1.5px dashed #ccc; border-radius: 12px; padding: 20px; cursor: pointer;
-  }
-  .drop span { font-weight: 600; font-size: 14px; }
-  .busy { color: #1a73e8; margin: 16px 0; }
+  .ptitle { font-size: 22px; margin: 0 0 12px; }
+  .busy { color: var(--xl-green); margin: 16px 0; }
   .filelist {
     list-style: none; padding: 0; margin: 16px 0;
     border: 1px solid #eee; border-radius: 12px;
@@ -160,13 +146,7 @@
   .filelist span { color: #777; }
   .filelist .x { background: none; border: none; padding: 0 6px; font-size: 18px; color: #999; cursor: pointer; }
   .opt { display: inline-flex; align-items: center; gap: 8px; font-size: 14px; margin: 4px 0 16px; cursor: pointer; }
-  .opt input { accent-color: #1a73e8; }
-  .keyrow { display: flex; gap: 12px; margin: 0 0 8px; }
-  button {
-    padding: 9px 18px; border: none; border-radius: 8px;
-    background: #1a73e8; color: #fff; font-weight: 600; cursor: pointer;
-  }
-  button.primary { margin-top: 16px; }
+  .opt input { accent-color: var(--xl-green); }
   .summary { display: flex; gap: 12px; margin: 24px 0 8px; flex-wrap: wrap; }
   .stat {
     flex: 1; min-width: 90px; border: 1px solid #eee; border-radius: 12px;
