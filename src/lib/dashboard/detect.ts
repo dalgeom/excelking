@@ -10,7 +10,8 @@ function detectType(name: string, rows: Row[]): ColumnType {
   const dateFrac = values.filter((v) => parseDate(v) !== null).length / values.length;
   if (dateFrac >= 0.8) return 'date';
   const distinct = new Set(values).size;
-  if (distinct <= rows.length * 0.5 && distinct <= 30) return 'category';
+  // 반복되는 값이 하나라도 있고(distinct < 행수) 고유값이 30 이하면 범주
+  if (distinct < rows.length && distinct <= 30) return 'category';
   return 'text';
 }
 
