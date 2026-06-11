@@ -1,83 +1,73 @@
 <script lang="ts">
-  const tools = [
-    {
-      href: '/excel-compare',
-      title: '두 엑셀 명단 비교·대조',
-      desc: '두 파일을 키 열 기준으로 대조해 일치/불일치/변경을 찾아줍니다.',
-      live: true
-    },
-    {
-      href: '/excel-split',
-      title: '엑셀 조건별 시트/파일 분리',
-      desc: '열 값별로 행을 나눠 시트 또는 개별 파일(ZIP)로 내려받습니다.',
-      live: true
-    },
-    {
-      href: '/pdf-to-excel',
-      title: 'PDF 표 → 엑셀 추출',
-      desc: 'PDF 속 표를 찾아 페이지별 시트 엑셀로 추출합니다.',
-      live: true
-    },
-    {
-      href: '/excel-merge',
-      title: '엑셀 합치기',
-      desc: '여러 엑셀 파일을 열에 맞춰 한 시트로 합쳐 드립니다.',
-      live: true
-    },
-    {
-      href: '/excel-dashboard',
-      title: '엑셀 자동 대시보드',
-      desc: '엑셀을 올리면 KPI·차트 대시보드를 자동 생성, 이미지로 저장합니다.',
-      live: true
-    }
-  ];
+  import { TOOLS } from '$lib/theme/tools';
+  // 허브 셀 배치: 3열 그리드
+  const COLS = ['A', 'B', 'C'];
+  let selected = $state(TOOLS[0]);
 </script>
 
 <svelte:head>
   <title>엑셀왕 — 사무직 엑셀·문서 도구 모음 (무료, 설치 없이)</title>
   <meta
     name="description"
-    content="두 엑셀 비교, PDF 표 추출, 시트 분리 등 사무직 엑셀 작업을 브라우저에서 무료로. 파일은 서버로 전송되지 않습니다." />
+    content="두 엑셀 비교, PDF 표 추출, 시트 분리, 합치기, 자동 대시보드 등 사무직 엑셀 작업을 브라우저에서 무료로. 파일은 서버로 전송되지 않습니다." />
 </svelte:head>
 
-<h1>엑셀왕</h1>
-<p class="lead">사무직의 반복 엑셀 작업을 브라우저에서 무료로. 설치도, 업로드도 없습니다.</p>
+<p class="lead">사무직의 반복 엑셀 작업을 브라우저에서 무료로. 셀을 눌러 도구를 여세요.</p>
 
-<div class="grid">
-  {#each tools as t}
-    <a class="card" class:disabled={!t.live} href={t.href}>
-      <h2>{t.title}</h2>
-      <p>{t.desc}</p>
-      {#if !t.live}<span class="badge">준비 중</span>{/if}
-    </a>
+<div class="formulabar">
+  <span class="namebox">{selected.tab}</span>
+  <span class="fx">fx</span>
+  <span class="fval">{selected.title} — {selected.desc}</span>
+</div>
+
+<div class="sheet">
+  <div class="corner"></div>
+  {#each COLS as c}<div class="colhead">{c}</div>{/each}
+  {#each Array(2) as _, r}
+    <div class="rowhead">{r + 1}</div>
+    {#each COLS as _, ci}
+      {@const tool = TOOLS[r * 3 + ci]}
+      {#if tool}
+        <a
+          class="cell"
+          class:sel={selected.href === tool.href}
+          href={tool.href}
+          onmouseenter={() => (selected = tool)}>
+          <b>{tool.title}</b>
+          <span>{tool.desc}</span>
+        </a>
+      {:else}
+        <div class="cell empty"></div>
+      {/if}
+    {/each}
   {/each}
 </div>
 
 <style>
-  h1 { font-size: 32px; margin: 0 0 8px; }
-  .lead { color: #555; font-size: 17px; margin: 0 0 32px; }
-  .grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-    gap: 16px;
+  .lead { color: #555; font-size: 16px; margin: 0 0 16px; }
+  .formulabar { display: flex; align-items: center; gap: 8px; margin: 0 0 16px; font-size: 13px; }
+  .namebox { min-width: 70px; padding: 4px 10px; border: 1px solid #c4c4c4; border-radius: 4px; background: #fafafa; color: #555; text-align: center; }
+  .fx { color: #999; font-style: italic; }
+  .fval { color: #555; }
+  .sheet {
+    display: grid; grid-template-columns: 36px repeat(3, 1fr);
+    border: 1px solid var(--xl-border); border-width: 1px 0 0 1px;
   }
-  .card {
-    display: block;
-    padding: 20px;
-    border: 1px solid #eee;
-    border-radius: 14px;
-    text-decoration: none;
-    color: inherit;
-    transition: border-color .15s, transform .15s;
-    position: relative;
+  .corner, .colhead, .rowhead { background: var(--xl-chrome); border: 1px solid var(--xl-border); border-width: 0 1px 1px 0; }
+  .colhead { text-align: center; padding: 6px; color: #777; font-size: 12px; }
+  .rowhead { display: flex; align-items: center; justify-content: center; color: #777; font-size: 12px; }
+  .cell {
+    border: 1px solid var(--xl-border); border-width: 0 1px 1px 0;
+    padding: 18px 16px; min-height: 88px; text-decoration: none; color: inherit;
+    display: flex; flex-direction: column; gap: 6px; background: #fff;
   }
-  .card:hover { border-color: #1a73e8; transform: translateY(-2px); }
-  .card.disabled { opacity: .5; pointer-events: none; }
-  .card h2 { font-size: 17px; margin: 0 0 6px; }
-  .card p { font-size: 14px; color: #666; margin: 0; }
-  .badge {
-    position: absolute; top: 14px; right: 14px;
-    font-size: 11px; color: #999; background: #f3f3f3;
-    padding: 2px 8px; border-radius: 999px;
+  .cell b { font-size: 15px; }
+  .cell span { font-size: 13px; color: #666; }
+  .cell:hover, .cell.sel { background: var(--xl-sel); outline: 2px solid var(--xl-green); outline-offset: -2px; }
+  .cell.empty { background: #fbfbfb; pointer-events: none; }
+  @media (max-width: 620px) {
+    .sheet { grid-template-columns: 1fr; border-width: 1px 0 0 1px; }
+    .corner, .colhead, .rowhead { display: none; }
+    .cell { border-width: 0 1px 1px 0; }
   }
 </style>
