@@ -4,7 +4,10 @@
   import { suggestCharts } from '$lib/dashboard/suggest';
   import { aggregate } from '$lib/dashboard/aggregate';
   import type { Column, ChartSpec, Agg, ChartKind } from '$lib/dashboard/types';
+  import Ribbon from '$lib/components/Ribbon.svelte';
+  import FormulaBar from '$lib/components/FormulaBar.svelte';
 
+  let fileInput = $state<HTMLInputElement>();
   let parsed = $state<ParsedFile | null>(null);
   let fileName = $state('');
   let columns = $state<Column[]>([]);
@@ -152,22 +155,20 @@
     content="엑셀을 올리면 KPI·막대·선·원형 차트 대시보드를 자동으로 만들어 드립니다. 이미지로 저장해 공유하세요. 무료, 설치 없이, 파일은 서버로 전송되지 않습니다." />
 </svelte:head>
 
-<h1>엑셀 자동 대시보드</h1>
-<p class="lead">엑셀을 올리면 열을 분석해 차트 대시보드를 자동으로 만들어 드립니다. 차트를 더하거나 빼고, 이미지로 저장하세요.</p>
+<Ribbon>
+  <button class="rbtn" onclick={() => fileInput?.click()}>📁 엑셀 열기 {fileName ? `· ${fileName}` : ''}</button>
+  <button class="rbtn primary" onclick={savePng} disabled={!parsed}>📷 PNG 저장</button>
+</Ribbon>
+<input bind:this={fileInput} type="file" accept=".xlsx,.xls,.csv" hidden onchange={onUpload} />
 
-<div class="uploads">
-  <label class="drop">
-    <span>엑셀 파일 {fileName ? `· ${fileName}` : ''}</span>
-    <input type="file" accept=".xlsx,.xls,.csv" onchange={onUpload} />
-  </label>
-</div>
+<FormulaBar cell="분석" value={parsed ? summary : busy ? '분석 중…' : '엑셀을 올려 주세요'} />
+
+<h1 class="ptitle">엑셀 자동 대시보드</h1>
 
 {#if busy}<p class="busy">분석하는 중입니다…</p>{/if}
 {#if error}<p class="error">{error}</p>{/if}
 
 {#if parsed}
-  <p class="summary-line">{summary}</p>
-
   <div class="toolbar">
     <div class="addform">
       <select bind:value={addKind}>
@@ -192,9 +193,8 @@
           <option value="max">최대</option>
         </select>
       {/if}
-      <button onclick={addChart}>+ 차트 추가</button>
+      <button class="rbtn" onclick={addChart}>➕ 차트 추가</button>
     </div>
-    <button class="primary" onclick={savePng}>📷 PNG로 저장</button>
   </div>
 
   <div class="board" bind:this={boardEl}>
@@ -253,24 +253,11 @@
 </section>
 
 <style>
-  h1 { font-size: 28px; margin: 0 0 8px; }
-  .lead { color: #555; margin: 0 0 24px; }
-  .uploads { display: grid; grid-template-columns: 1fr; gap: 12px; }
-  .drop {
-    display: flex; flex-direction: column; gap: 8px;
-    border: 1.5px dashed #ccc; border-radius: 12px; padding: 20px; cursor: pointer;
-  }
-  .drop span { font-weight: 600; font-size: 14px; }
-  .busy { color: #1a73e8; margin: 16px 0; }
-  .summary-line { color: #555; margin: 20px 0 8px; font-size: 14px; }
-  .toolbar { display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin: 12px 0 20px; }
-  .addform { display: flex; gap: 8px; flex-wrap: wrap; }
+  .ptitle { font-size: 22px; margin: 0 0 12px; }
+  .busy { color: var(--xl-green); margin: 16px 0; }
+  .toolbar { display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin: 0 0 20px; }
+  .addform { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
   select { padding: 8px 10px; border-radius: 8px; border: 1px solid #ccc; font-size: 13px; }
-  button {
-    padding: 9px 16px; border: none; border-radius: 8px;
-    background: #eef2f7; color: #1a1a1a; font-weight: 600; cursor: pointer; font-size: 13px;
-  }
-  button.primary { background: #1a73e8; color: #fff; }
   .board { background: #fff; }
   .kpis { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 16px; }
   .kpi {
