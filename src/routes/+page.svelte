@@ -12,7 +12,12 @@
       desc: '열 값별로 행을 나눠 시트 또는 개별 파일(ZIP)로 내려받습니다.',
       live: true
     },
-    { href: '#', title: 'PDF 표 → 엑셀 추출', desc: '준비 중', live: false },
+    {
+      href: '/pdf-to-excel',
+      title: 'PDF 표 → 엑셀 추출',
+      desc: 'PDF 속 표를 찾아 페이지별 시트 엑셀로 추출합니다.',
+      live: true
+    },
     { href: '#', title: '엑셀 합치기', desc: '준비 중', live: false },
     { href: '#', title: '엑셀 자동 대시보드', desc: '준비 중', live: false }
   ];
