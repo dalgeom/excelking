@@ -2,6 +2,9 @@
   import { parseFile, type ParsedFile } from '$lib/excel/parse';
   import { splitByColumn, type SplitGroup } from '$lib/excel/split';
   import { buildSplitWorkbook, buildSplitZip } from '$lib/excel/export';
+  import Ribbon from '$lib/components/Ribbon.svelte';
+  import FormulaBar from '$lib/components/FormulaBar.svelte';
+  import { saveBlob, XLSX_MIME } from '$lib/excel/download';
 
   let file = $state<ParsedFile | null>(null);
   let fileName = $state('');
@@ -9,6 +12,7 @@
   let groups = $state<SplitGroup[] | null>(null);
   let mode = $state<'sheets' | 'files'>('sheets');
   let error = $state('');
+  let fileInput = $state<HTMLInputElement>();
 
   async function onUpload(e: Event) {
     error = '';
@@ -32,30 +36,12 @@
     groups = splitByColumn(file.rows, splitColumn);
   }
 
-  function saveBlob(blob: Blob, name: string) {
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = name;
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-    URL.revokeObjectURL(url);
-  }
-
   function download() {
     if (!groups) return;
     if (mode === 'sheets') {
-      const bytes = buildSplitWorkbook(groups);
-      saveBlob(
-        new Blob([bytes], {
-          type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-        }),
-        `${fileName}_분리.xlsx`
-      );
+      saveBlob(buildSplitWorkbook(groups), `${fileName}_분리.xlsx`, XLSX_MIME);
     } else {
-      const bytes = buildSplitZip(groups);
-      saveBlob(new Blob([bytes as BlobPart], { type: 'application/zip' }), `${fileName}_분리.zip`);
+      saveBlob(buildSplitZip(groups), `${fileName}_분리.zip`, 'application/zip');
     }
   }
 </script>
@@ -67,15 +53,16 @@
     content="엑셀 파일을 부서·지역·담당자 등 열 값별로 나눠 시트 또는 개별 파일(ZIP)로 내려받으세요. 무료, 설치 없이, 파일은 서버로 전송되지 않습니다." />
 </svelte:head>
 
-<h1>엑셀 조건별 시트/파일 분리</h1>
-<p class="lead">파일을 올리고 기준 열을 고르면, 열 값별로 나눠 시트 또는 개별 파일로 만들어 드립니다.</p>
+<Ribbon>
+  <button class="rbtn" onclick={() => fileInput?.click()}>📁 파일 열기 {file ? `· ${file.rows.length}행` : ''}</button>
+  <button class="rbtn primary" onclick={runSplit} disabled={!file || !splitColumn}>▶ 분리</button>
+  <button class="rbtn" onclick={download} disabled={!groups}>⤓ {mode === 'sheets' ? '시트 다운로드' : 'ZIP 다운로드'}</button>
+</Ribbon>
+<input bind:this={fileInput} type="file" accept=".xlsx,.xls,.csv" hidden onchange={onUpload} />
 
-<div class="uploads">
-  <label class="drop">
-    <span>엑셀 파일 {file ? `· ${file.rows.length}행` : ''}</span>
-    <input type="file" accept=".xlsx,.xls,.csv" onchange={onUpload} />
-  </label>
-</div>
+<FormulaBar cell="분리 기준" value={splitColumn || '파일을 올리고 기준 열을 고르세요'} />
+
+<h1 class="ptitle">엑셀 조건별 시트/파일 분리</h1>
 
 {#if file && file.columns.length > 0}
   <div class="keyrow">
@@ -84,7 +71,6 @@
       <option value="" disabled>열 선택</option>
       {#each file.columns as c}<option value={c}>{c}</option>{/each}
     </select>
-    <button onclick={runSplit}>분리하기</button>
   </div>
 {:else if file}
   <p class="error">열 이름(첫 행)을 찾지 못했습니다. 첫 행이 머리글인지 확인해 주세요.</p>
@@ -108,10 +94,7 @@
     <label><input type="radio" bind:group={mode} value="sheets" /> 한 파일, 시트로 분리 (.xlsx)</label>
     <label><input type="radio" bind:group={mode} value="files" /> 여러 파일로 분리 (.zip)</label>
   </div>
-
-  <button class="primary" onclick={download}>
-    {mode === 'sheets' ? '분리된 엑셀 다운로드' : 'ZIP 다운로드'}
-  </button>
+  <p class="hint">상단 리본의 [⤓ 다운로드]로 받으세요.</p>
 {/if}
 
 <p class="privacy">🔒 업로드한 파일은 서버로 전송되지 않고, 브라우저 안에서만 처리됩니다.</p>
@@ -148,21 +131,11 @@
 </section>
 
 <style>
-  h1 { font-size: 28px; margin: 0 0 8px; }
-  .lead { color: #555; margin: 0 0 24px; }
-  .uploads { display: grid; grid-template-columns: 1fr; gap: 12px; }
-  .drop {
-    display: flex; flex-direction: column; gap: 8px;
-    border: 1.5px dashed #ccc; border-radius: 12px; padding: 20px; cursor: pointer;
-  }
-  .drop span { font-weight: 600; font-size: 14px; }
-  .keyrow { display: flex; align-items: center; gap: 12px; margin: 20px 0; flex-wrap: wrap; }
+  .ptitle { font-size: 22px; margin: 0 0 12px; }
+  .keyrow { display: flex; align-items: center; gap: 12px; margin: 8px 0 20px; flex-wrap: wrap; }
+  .keyrow label { font-size: 14px; color: #555; }
   select { padding: 8px 12px; border-radius: 8px; border: 1px solid #ccc; }
-  button {
-    padding: 9px 18px; border: none; border-radius: 8px;
-    background: #1a73e8; color: #fff; font-weight: 600; cursor: pointer;
-  }
-  button.primary { margin-top: 16px; }
+  .hint { color: #888; font-size: 13px; margin: 12px 0 0; }
   .summary { display: flex; gap: 12px; margin: 24px 0 8px; flex-wrap: wrap; }
   .stat {
     flex: 1; min-width: 90px; border: 1px solid #eee; border-radius: 12px;
