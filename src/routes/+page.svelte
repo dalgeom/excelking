@@ -18,7 +18,12 @@
       desc: 'PDF 속 표를 찾아 페이지별 시트 엑셀로 추출합니다.',
       live: true
     },
-    { href: '#', title: '엑셀 합치기', desc: '준비 중', live: false },
+    {
+      href: '/excel-merge',
+      title: '엑셀 합치기',
+      desc: '여러 엑셀 파일을 열에 맞춰 한 시트로 합쳐 드립니다.',
+      live: true
+    },
     {
       href: '/excel-dashboard',
       title: '엑셀 자동 대시보드',
