@@ -2,11 +2,15 @@
   import { reconstructPage } from '$lib/pdf/reconstruct';
   import { buildPdfWorkbook } from '$lib/pdf/toWorkbook';
   import type { PdfSheet } from '$lib/pdf/types';
+  import Ribbon from '$lib/components/Ribbon.svelte';
+  import FormulaBar from '$lib/components/FormulaBar.svelte';
+  import { saveBlob, XLSX_MIME } from '$lib/excel/download';
 
   let fileName = $state('');
   let pages = $state<PdfSheet[] | null>(null);
   let busy = $state(false);
   let error = $state('');
+  let fileInput = $state<HTMLInputElement>();
 
   const PREVIEW_ROWS = 50;
 
@@ -42,18 +46,7 @@
 
   function download() {
     if (!pages) return;
-    const bytes = buildPdfWorkbook(pages);
-    const blob = new Blob([bytes], {
-      type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-    });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `${fileName}_표.xlsx`;
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-    URL.revokeObjectURL(url);
+    saveBlob(buildPdfWorkbook(pages), `${fileName}_표.xlsx`, XLSX_MIME);
   }
 </script>
 
@@ -64,15 +57,21 @@
     content="PDF 안의 표를 엑셀(.xlsx)로 추출하세요. 페이지별 시트로 변환, 미리보기 제공. 무료, 설치 없이, 파일은 서버로 전송되지 않습니다." />
 </svelte:head>
 
-<h1>PDF 표 → 엑셀 추출</h1>
-<p class="lead">PDF를 올리면 표를 찾아 페이지별 시트 엑셀로 만들어 드립니다. 다운로드 전 미리보기로 확인하세요.</p>
+<Ribbon>
+  <button class="rbtn" onclick={() => fileInput?.click()}>📁 PDF 열기 {fileName ? `· ${fileName}` : ''}</button>
+  <button class="rbtn primary" onclick={download} disabled={!pages}>⤓ 엑셀 다운로드</button>
+</Ribbon>
+<input bind:this={fileInput} type="file" accept="application/pdf,.pdf" hidden onchange={onUpload} />
 
-<div class="uploads">
-  <label class="drop">
-    <span>PDF 파일 {fileName ? `· ${fileName}` : ''}</span>
-    <input type="file" accept="application/pdf,.pdf" onchange={onUpload} />
-  </label>
-</div>
+<FormulaBar
+  cell="추출"
+  value={pages
+    ? `${pages.length}페이지 · 표 ${pages.filter((p) => p.grid.length > 0).length}개`
+    : busy
+      ? '처리 중…'
+      : 'PDF를 올려 주세요'} />
+
+<h1 class="ptitle">PDF 표 → 엑셀 추출</h1>
 
 {#if busy}<p class="busy">PDF를 처리하는 중입니다…</p>{/if}
 {#if error}<p class="error">{error}</p>{/if}
@@ -84,8 +83,6 @@
       <strong>{pages.filter((p) => p.grid.length > 0).length}</strong><span>표 추출됨</span>
     </div>
   </div>
-
-  <button class="primary" onclick={download}>엑셀 다운로드</button>
 
   <div class="previews">
     {#each pages as p, i}
@@ -146,20 +143,8 @@
 </section>
 
 <style>
-  h1 { font-size: 28px; margin: 0 0 8px; }
-  .lead { color: #555; margin: 0 0 24px; }
-  .uploads { display: grid; grid-template-columns: 1fr; gap: 12px; }
-  .drop {
-    display: flex; flex-direction: column; gap: 8px;
-    border: 1.5px dashed #ccc; border-radius: 12px; padding: 20px; cursor: pointer;
-  }
-  .drop span { font-weight: 600; font-size: 14px; }
-  .busy { color: #1a73e8; margin: 16px 0; }
-  button {
-    padding: 9px 18px; border: none; border-radius: 8px;
-    background: #1a73e8; color: #fff; font-weight: 600; cursor: pointer;
-  }
-  button.primary { margin: 16px 0; }
+  .ptitle { font-size: 22px; margin: 0 0 12px; }
+  .busy { color: var(--xl-green); margin: 16px 0; }
   .summary { display: flex; gap: 12px; margin: 24px 0 8px; flex-wrap: wrap; }
   .stat {
     flex: 1; min-width: 90px; border: 1px solid #eee; border-radius: 12px;
