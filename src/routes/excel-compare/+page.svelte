@@ -3,12 +3,17 @@
   import { compareByKey } from '$lib/excel/compare';
   import { buildResultWorkbook } from '$lib/excel/export';
   import type { CompareResult } from '$lib/excel/types';
+  import Ribbon from '$lib/components/Ribbon.svelte';
+  import FormulaBar from '$lib/components/FormulaBar.svelte';
+  import { saveBlob, XLSX_MIME } from '$lib/excel/download';
 
   let fileA = $state<ParsedFile | null>(null);
   let fileB = $state<ParsedFile | null>(null);
   let keyColumn = $state('');
   let result = $state<CompareResult | null>(null);
   let error = $state('');
+  let aInput = $state<HTMLInputElement>();
+  let bInput = $state<HTMLInputElement>();
 
   const commonColumns = $derived(
     fileA && fileB ? fileA.columns.filter((c) => fileB!.columns.includes(c)) : []
@@ -39,18 +44,7 @@
 
   function download() {
     if (!result) return;
-    const bytes = buildResultWorkbook(result, keyColumn);
-    const blob = new Blob([bytes], {
-      type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-    });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = '비교결과.xlsx';
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-    URL.revokeObjectURL(url);
+    saveBlob(buildResultWorkbook(result, keyColumn), '비교결과.xlsx', XLSX_MIME);
   }
 </script>
 
@@ -61,19 +55,18 @@
     content="두 엑셀 파일을 키 열 기준으로 대조해 한쪽에만 있는 행과 값이 바뀐 행을 찾아 엑셀로 내려받으세요. 무료, 설치 없이, 파일은 서버로 전송되지 않습니다." />
 </svelte:head>
 
-<h1>두 엑셀 명단 비교·대조</h1>
-<p class="lead">두 파일을 올리고 기준 열을 고르면, 한쪽에만 있는 행과 값이 바뀐 행을 찾아 드립니다.</p>
+<Ribbon>
+  <button class="rbtn" onclick={() => aInput?.click()}>📁 파일 A {fileA ? `· ${fileA.rows.length}행` : ''}</button>
+  <button class="rbtn" onclick={() => bInput?.click()}>📁 파일 B {fileB ? `· ${fileB.rows.length}행` : ''}</button>
+  <button class="rbtn primary" onclick={runCompare} disabled={!fileA || !fileB || !keyColumn}>▶ 비교 실행</button>
+  <button class="rbtn" onclick={download} disabled={!result}>⤓ 결과 다운로드</button>
+</Ribbon>
+<input bind:this={aInput} type="file" accept=".xlsx,.xls,.csv" hidden onchange={(e) => onUpload(e, 'A')} />
+<input bind:this={bInput} type="file" accept=".xlsx,.xls,.csv" hidden onchange={(e) => onUpload(e, 'B')} />
 
-<div class="uploads">
-  <label class="drop">
-    <span>파일 A {fileA ? `· ${fileA.rows.length}행` : ''}</span>
-    <input type="file" accept=".xlsx,.xls,.csv" onchange={(e) => onUpload(e, 'A')} />
-  </label>
-  <label class="drop">
-    <span>파일 B {fileB ? `· ${fileB.rows.length}행` : ''}</span>
-    <input type="file" accept=".xlsx,.xls,.csv" onchange={(e) => onUpload(e, 'B')} />
-  </label>
-</div>
+<FormulaBar cell="기준열" value={keyColumn || '두 파일을 올리고 기준 열을 고르세요'} />
+
+<h1 class="ptitle">두 엑셀 명단 비교·대조</h1>
 
 {#if commonColumns.length > 0}
   <div class="keyrow">
@@ -82,7 +75,6 @@
       <option value="" disabled>열 선택</option>
       {#each commonColumns as c}<option value={c}>{c}</option>{/each}
     </select>
-    <button onclick={runCompare}>비교하기</button>
   </div>
 {:else if fileA && fileB}
   <p class="error">두 파일에 공통된 열 이름이 없습니다. 헤더(첫 행)를 확인해 주세요.</p>
@@ -97,7 +89,6 @@
     <div class="stat"><strong>{result.both.length}</strong><span>공통</span></div>
     <div class="stat"><strong>{result.changed.length}</strong><span>값 변경</span></div>
   </div>
-  <button class="primary" onclick={download}>결과 엑셀 다운로드</button>
 {/if}
 
 <p class="privacy">🔒 업로드한 파일은 서버로 전송되지 않고, 브라우저 안에서만 처리됩니다.</p>
@@ -134,21 +125,10 @@
 </section>
 
 <style>
-  h1 { font-size: 28px; margin: 0 0 8px; }
-  .lead { color: #555; margin: 0 0 24px; }
-  .uploads { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-  .drop {
-    display: flex; flex-direction: column; gap: 8px;
-    border: 1.5px dashed #ccc; border-radius: 12px; padding: 20px; cursor: pointer;
-  }
-  .drop span { font-weight: 600; font-size: 14px; }
-  .keyrow { display: flex; align-items: center; gap: 12px; margin: 20px 0; flex-wrap: wrap; }
+  .ptitle { font-size: 22px; margin: 0 0 12px; }
+  .keyrow { display: flex; align-items: center; gap: 12px; margin: 8px 0 20px; flex-wrap: wrap; }
+  .keyrow label { font-size: 14px; color: #555; }
   select { padding: 8px 12px; border-radius: 8px; border: 1px solid #ccc; }
-  button {
-    padding: 9px 18px; border: none; border-radius: 8px;
-    background: #1a73e8; color: #fff; font-weight: 600; cursor: pointer;
-  }
-  button.primary { margin-top: 16px; }
   .summary { display: flex; gap: 12px; margin: 24px 0 8px; flex-wrap: wrap; }
   .stat {
     flex: 1; min-width: 90px; border: 1px solid #eee; border-radius: 12px;
