@@ -19,7 +19,12 @@
       live: true
     },
     { href: '#', title: '엑셀 합치기', desc: '준비 중', live: false },
-    { href: '#', title: '엑셀 자동 대시보드', desc: '준비 중', live: false }
+    {
+      href: '/excel-dashboard',
+      title: '엑셀 자동 대시보드',
+      desc: '엑셀을 올리면 KPI·차트 대시보드를 자동 생성, 이미지로 저장합니다.',
+      live: true
+    }
   ];
 </script>
 
