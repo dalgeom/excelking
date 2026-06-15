@@ -12,8 +12,18 @@
   <header class="titlebar">
     <a href="/" class="brand">
       <svg class="brand-ico" viewBox="0 0 28 28" width="22" height="22" aria-hidden="true">
-        <rect x="1.5" y="1.5" width="25" height="25" rx="5.5" fill="#fff" stroke="#1a5c38" stroke-width="1" />
-        <path d="M9.5 9 L18.5 19 M18.5 9 L9.5 19" stroke="#217346" stroke-width="2.6" stroke-linecap="round" />
+        <rect x="1.5" y="1.5" width="25" height="25" rx="5.5" fill="#fff" />
+        <rect x="5" y="5" width="18" height="18" rx="1.5" fill="#217346" />
+        <g fill="#fff">
+          <rect x="6.5" y="6.5" width="6.6" height="3" />
+          <rect x="14.9" y="6.5" width="6.6" height="3" />
+          <rect x="6.5" y="11" width="6.6" height="3" />
+          <rect x="14.9" y="11" width="6.6" height="3" />
+          <rect x="6.5" y="15.5" width="6.6" height="3" />
+          <rect x="14.9" y="15.5" width="6.6" height="3" />
+          <rect x="6.5" y="20" width="6.6" height="1.5" />
+          <rect x="14.9" y="20" width="6.6" height="1.5" />
+        </g>
       </svg>
       엑셀왕 <span>excelking</span>
     </a>
