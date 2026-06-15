@@ -1,5 +1,6 @@
 <script lang="ts">
   import { TOOLS } from '$lib/theme/tools';
+  import FormulaBar from '$lib/components/FormulaBar.svelte';
   // 허브 셀 배치: 3열 그리드
   const COLS = ['A', 'B', 'C'];
   let selected = $state(TOOLS[0]);
@@ -14,11 +15,7 @@
 
 <p class="lead">사무직의 반복 엑셀 작업을 브라우저에서 무료로. 셀을 눌러 도구를 여세요.</p>
 
-<div class="formulabar">
-  <span class="namebox">{selected.tab}</span>
-  <span class="fx">fx</span>
-  <span class="fval">{selected.title} — {selected.desc}</span>
-</div>
+<FormulaBar cell={selected.tab} value={`${selected.title} — ${selected.desc}`} />
 
 <div class="sheet">
   <div class="corner"></div>
@@ -45,10 +42,6 @@
 
 <style>
   .lead { color: #555; font-size: 16px; margin: 0 0 16px; }
-  .formulabar { display: flex; align-items: center; gap: 8px; margin: 0 0 16px; font-size: 13px; }
-  .namebox { min-width: 70px; padding: 4px 10px; border: 1px solid #c4c4c4; border-radius: 4px; background: #fafafa; color: #555; text-align: center; }
-  .fx { color: #999; font-style: italic; }
-  .fval { color: #555; }
   .sheet {
     display: grid; grid-template-columns: 36px repeat(3, 1fr);
     border: 1px solid var(--xl-border); border-width: 1px 0 0 1px;

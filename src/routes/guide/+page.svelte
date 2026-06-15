@@ -1,5 +1,6 @@
 <script lang="ts">
   import { TOOLS } from '$lib/theme/tools';
+  import FormulaBar from '$lib/components/FormulaBar.svelte';
 
   const STEPS: Record<string, string[]> = {
     '/excel-compare': [
@@ -40,11 +41,7 @@
 
 {#each TOOLS as tool}
   <section class="guide-block">
-    <div class="formulabar">
-      <span class="namebox">{tool.tab}</span>
-      <span class="fx">fx</span>
-      <span class="fval">{tool.title}</span>
-    </div>
+    <FormulaBar cell={tool.tab} value={tool.title} />
     <ol>
       {#each STEPS[tool.href] ?? [] as step}<li>{step}</li>{/each}
     </ol>
@@ -55,10 +52,6 @@
 <style>
   .lead { color: #555; font-size: 16px; margin: 0 0 24px; }
   .guide-block { margin: 0 0 28px; }
-  .formulabar { display: flex; align-items: center; gap: 8px; margin: 0 0 12px; font-size: 13px; }
-  .namebox { min-width: 70px; padding: 4px 10px; border: 1px solid #c4c4c4; border-radius: 4px; background: #fafafa; color: #555; text-align: center; }
-  .fx { color: #999; font-style: italic; }
-  .fval { color: #1a1a1a; font-weight: 700; }
   ol { margin: 0 0 14px; padding-left: 22px; color: #444; line-height: 1.8; }
   ol li { font-size: 14px; }
 </style>
