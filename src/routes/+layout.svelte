@@ -1,6 +1,7 @@
 <script lang="ts">
   import '$lib/theme/excel.css';
   import SheetTabs from '$lib/components/SheetTabs.svelte';
+  import Footer from '$lib/components/Footer.svelte';
   import { page } from '$app/state';
   import { TOOLS } from '$lib/theme/tools';
   let { children } = $props();
@@ -13,15 +14,12 @@
     {#if current}<span class="doctitle">{current.title}</span>{/if}
   </header>
 
+  <SheetTabs />
+
   <main>{@render children()}</main>
 </div>
 
-<div class="bottombar">
-  <div class="bottombar-inner">
-    <SheetTabs />
-    <span class="status">🔒 모든 처리는 브라우저 안에서 · 파일은 서버로 전송되지 않습니다</span>
-  </div>
-</div>
+<Footer />
 
 <style>
   .xl-window {
@@ -37,14 +35,4 @@
   .brand span { font-size: 12px; font-weight: 500; opacity: .75; }
   .doctitle { font-size: 13px; opacity: .9; }
   main { padding: 24px; }
-  .bottombar {
-    position: sticky; bottom: 0; z-index: 10;
-    background: var(--xl-chrome); border-top: 1px solid #cfcdc8;
-  }
-  .bottombar-inner {
-    max-width: 1040px; margin: 0 auto; padding: 6px 12px 4px;
-    display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap;
-  }
-  .status { font-size: 12px; color: #777; white-space: nowrap; }
-  @media (max-width: 620px) { .status { display: none; } }
 </style>
