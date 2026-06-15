@@ -12,18 +12,15 @@
   <header class="titlebar">
     <a href="/" class="brand">
       <svg class="brand-ico" viewBox="0 0 28 28" width="22" height="22" aria-hidden="true">
-        <rect x="1.5" y="1.5" width="25" height="25" rx="5.5" fill="#fff" />
-        <rect x="5" y="5" width="18" height="18" rx="1.5" fill="#217346" />
-        <g fill="#fff">
-          <rect x="6.5" y="6.5" width="6.6" height="3" />
-          <rect x="14.9" y="6.5" width="6.6" height="3" />
-          <rect x="6.5" y="11" width="6.6" height="3" />
-          <rect x="14.9" y="11" width="6.6" height="3" />
-          <rect x="6.5" y="15.5" width="6.6" height="3" />
-          <rect x="14.9" y="15.5" width="6.6" height="3" />
-          <rect x="6.5" y="20" width="6.6" height="1.5" />
-          <rect x="14.9" y="20" width="6.6" height="1.5" />
+        <rect x="9" y="3.5" width="15.5" height="21" rx="2" fill="#fff" />
+        <g stroke="#21a366" stroke-width="1">
+          <line x1="9" y1="9.5" x2="24.5" y2="9.5" />
+          <line x1="9" y1="14" x2="24.5" y2="14" />
+          <line x1="9" y1="18.5" x2="24.5" y2="18.5" />
+          <line x1="16.7" y1="3.5" x2="16.7" y2="24.5" />
         </g>
+        <rect x="2.5" y="8" width="13" height="12.5" rx="2" fill="#185c37" />
+        <path d="M6 11.2 L12 17.3 M12 11.2 L6 17.3" stroke="#fff" stroke-width="1.8" stroke-linecap="round" />
       </svg>
       엑셀왕 <span>excelking</span>
     </a>
