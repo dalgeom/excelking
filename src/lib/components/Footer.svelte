@@ -16,6 +16,7 @@
     </div>
     <div class="foot-col">
       <h4>안내</h4>
+      <a href="/tips">엑셀 꿀팁</a>
       <a href="/guide">사용법</a>
       <a href="mailto:devcom21c@gmail.com">문의 이메일</a>
     </div>

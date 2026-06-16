@@ -1,12 +1,20 @@
 <script lang="ts">
   import { page } from '$app/state';
   import { TOOLS } from '$lib/theme/tools';
-  const tabs = [{ href: '/', tab: '홈' }, ...TOOLS.map((t) => ({ href: t.href, tab: t.tab }))];
+  const tabs = [
+    { href: '/', tab: '홈' },
+    ...TOOLS.map((t) => ({ href: t.href, tab: t.tab })),
+    { href: '/tips', tab: '꿀팁' }
+  ];
+  function active(href: string): boolean {
+    const path = page.url.pathname;
+    return path === href || (href !== '/' && path.startsWith(href + '/'));
+  }
 </script>
 
 <nav class="menutabs" aria-label="도구">
   {#each tabs as t}
-    <a href={t.href} class="tab" class:active={page.url.pathname === t.href}>{t.tab}</a>
+    <a href={t.href} class="tab" class:active={active(t.href)}>{t.tab}</a>
   {/each}
 </nav>
 
