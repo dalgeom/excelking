@@ -69,9 +69,9 @@
 {/if}
 
 <style>
-  .back { display: inline-block; margin: 0 0 14px; color: var(--xl-green); text-decoration: none; font-size: 13px; }
+  .back { display: block; margin: 0 0 18px; color: var(--xl-green); text-decoration: none; font-size: 13px; }
   .back:hover { text-decoration: underline; }
-  .cat { font-size: 12px; color: var(--xl-green); font-weight: 700; }
+  .cat { display: block; font-size: 12px; color: var(--xl-green); font-weight: 700; }
   h1 { font-size: 24px; margin: 4px 0 8px; }
   .summary { color: #555; font-size: 15px; margin: 0 0 8px; }
   section { margin: 22px 0; }
